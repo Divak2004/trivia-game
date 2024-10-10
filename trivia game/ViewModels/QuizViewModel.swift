@@ -31,24 +31,21 @@ class QuizViewModel: ObservableObject {
   }
 
   /// Processes the selected answer, updates the score and advances to the next question.
-  func submitAnswer(answer: String, correctAnswer: String) -> Bool {
+  func submitAnswer(answer: String, correctAnswer: String) {
     // Functionality to be implemented: check the selected answer, update score, move to next question or finish quiz.
     answered = true
     if answer == correctAnswer {
         score += 1
-        return true
-    } else {
-        return false
     }
   }
     
-    func loadNextQuestion() {
-        currentQuestionIndex += 1
-        answered = false
-        if numQuestions == currentQuestionIndex {
-            quizFinished = true
-        }
+  func loadNextQuestion() {
+    currentQuestionIndex += 1
+    answered = false
+    if numQuestions == currentQuestionIndex {
+        quizFinished = true
     }
+  }
 
   /// Resets the quiz to its initial state for a new game.
   func resetQuiz() {

@@ -9,8 +9,7 @@ import SwiftUI
 struct QuestionView: View {
     @Binding var navigationPath: NavigationPath
     @ObservedObject var quiz: QuizViewModel
-    
-    @State private var answerChoice: Text = Text("")
+
     @State private var remainingTime: Int = 15
     @State private var timerActive: Bool = true
     @State private var isBlurred: Bool = false
@@ -45,8 +44,14 @@ struct QuestionView: View {
                     if !quiz.answered {
                         quiz.answered = true
                         timerActive = false
-                        let isCorrect = quiz.submitAnswer(answer: answer, correctAnswer: question.correctAnswer)
-                        answerChoice = isCorrect ? Text("Correct").foregroundStyle(Color.green) : Text("Incorrect").foregroundStyle(Color.red)
+                        quiz.submitAnswer(answer: answer, correctAnswer: question.correctAnswer)
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            isBlurred.toggle() // Start blur animation
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            quiz.loadNextQuestion()
+                            navigationPath.append(quiz.currentQuestionIndex)
+                        }
                     }
                 }) {
                     Text(answer)
@@ -58,25 +63,6 @@ struct QuestionView: View {
                 }
                 .disabled(quiz.answered)
             }
-            
-            answerChoice
-                .font(.headline)
-                .foregroundColor(quiz.answered ? .green : .primary)
-                .padding()
-            
-            Button("Next") {
-                if quiz.answered {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        isBlurred.toggle() // Start blur animation
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        quiz.loadNextQuestion()
-                        navigationPath.append(quiz.currentQuestionIndex)
-                    }
-                }
-            }
-            .padding()
-            .disabled(!quiz.answered)
         }
         .padding()
         .onReceive(timer) { _ in
@@ -87,7 +73,6 @@ struct QuestionView: View {
             } else {
                 if !quiz.answered {
                     quiz.answered = true
-                    answerChoice = Text("Time's up").foregroundStyle(Color.red)
                     withAnimation(.easeInOut(duration: 0.5)) {
                         isBlurred.toggle() // Start blur animation
                     }
